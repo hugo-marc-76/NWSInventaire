@@ -1,0 +1,70 @@
+﻿@page "/AllStudent";
+
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+@using Newtonsoft.Json;
+@inject NavigationManager _nav
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Prénom</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+
+
+            @if (App.studentList != null)
+            {
+                @foreach (Student student in App.studentList)
+                {
+                    <tr>
+                        <td>@student.StudentId</td>
+                        <td>@student.StudentFirstName</td>
+                        <td>@student.StudentLastName</td>
+                        <td>@student.StudentMail</td>
+                        <td>
+                            <button type="button" class="btn btn-primary" @onclick="@(()=>_nav.NavigateTo("/PutStudent/" + student.StudentId))">Modifier</button>
+                            <button type="button" class="btn btn-danger" @onclick="@(()=>_nav.NavigateTo("/DeleteStudent/" + student.StudentId))">Supprimer</button>
+                        </td>
+                        
+                    </tr>
+                }
+            }
+            
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    private void StudentIsGet() => toasterService.AddToast(Toast.NewToast("Notification", "Tout les étudiant ont été charger", MessageColour.Success, 15));
+    private void StudentIsNotGet() => toasterService.AddToast(Toast.NewToast("Notification", "Les étudiant n'ont pas été charger", MessageColour.Danger, 15));
+
+
+    protected async override void OnInitialized()
+    {
+
+        var result = await App.GetAllStudent();
+
+            if (result)
+            {
+                //StudentIsGet();
+            }
+            else
+            {
+                StudentIsNotGet();
+            }   
+
+        StateHasChanged();
+
+        base.OnInitialized();
+    }
+
+}

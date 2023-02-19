@@ -1,0 +1,58 @@
+﻿@page "/AddMaterialCategorie";
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+@using Newtonsoft.Json;
+@inject NavigationManager _nav
+
+<div class="form-signin w-100 m-auto">
+        <div class="row g-3">
+
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput" placeholder="Prénom" @oninput="@((e) => { materialCategorie.Name = (string)e.Value; })">
+                <label for="floatingInput">Nom du materiel</label>
+            </div>
+
+            <button class="w-100 btn btn-lg btn-primary" type="submit" @onclick="SendMaterialToApi">Soumettre</button>
+        </div>
+    </div>    
+
+
+
+@code {
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    MaterialCategorie materialCategorie = new();
+
+    private void CategorieIsAdd() => toasterService.AddToast(Toast.NewToast("Notification", "Le materiel a bien était ajouter", MessageColour.Success, 15));
+    private void CategorieIsNotAdd() => toasterService.AddToast(Toast.NewToast("Notification", "Le materiel n'a pas était ajouter", MessageColour.Warning, 15));
+    private void Error() => toasterService.AddToast(Toast.NewToast("Erreur", "Une erreur est survenue", MessageColour.Danger, 15));
+
+
+    public async void SendMaterialToApi()
+    {
+
+        if (materialCategorie.Name != "" )
+        {
+            var Result = await App.SendPostAsJsonToApi("api/MaterialCategorie/AddMaterialCategorie", materialCategorie);
+
+            if (Result)
+            {
+                CategorieIsAdd();
+                _nav.NavigateTo("/MaterialCategorieManager");
+            }
+            else
+            {
+                CategorieIsNotAdd();
+            }
+
+        }
+        else
+        {
+            Error();
+        }
+
+    }
+
+}

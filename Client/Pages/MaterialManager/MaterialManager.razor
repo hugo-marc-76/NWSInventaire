@@ -1,0 +1,27 @@
+﻿@page "/MaterialManager";
+@inject NavigationManager _nav
+
+<h3>Étudiant Manager</h3>
+
+<div class="container">
+    <header class="d-flex justify-content-center py-3">
+        <div class="row-md-5 text-end"
+            <button type="button" class="btn btn-primary" @onclick="@(()=>_nav.NavigateTo("/AddMaterial/"))">Ajouter un materiel</button>
+        </div>
+    </header>
+</div>
+
+<ViewAllMaterial />
+
+
+@code {
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+
+
+}

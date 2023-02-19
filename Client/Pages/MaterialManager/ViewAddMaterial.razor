@@ -1,0 +1,156 @@
+﻿@page "/AddMaterial";
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+@using Newtonsoft.Json;
+@inject NavigationManager _nav
+
+@if (App.materialCategorieList != null)
+{
+    <div class="form-signin w-100 m-auto">
+        <div class="row g-3">
+
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput" placeholder="Prénom" @oninput="@((e) => { material.MaterialName = (string)e.Value; })">
+                <label for="floatingInput">Nom du materiel</label>
+            </div>
+            <div class="form-floating">
+                <input type="text" class="form-control" id="floatingInput" placeholder="Nom" @oninput="@((e) => { material.MaterialDescription = (string)e.Value; })">
+                <label for="floatingInput">Description du materiel</label>
+            </div>
+            
+            <div class="col-md-5">
+                <label for="zip" class="form-label">Catégorie</label>
+              <select class="form-select" @onchange="SelectChange">
+                <option selected>Selectionner une catégorie</option>
+                @foreach (MaterialCategorie materialCategorie in App.materialCategorieList)
+                {
+                    <option value="@materialCategorie.MaterialCategorieId.ToString()">@materialCategorie.Name</option>
+                }
+              </select>
+              <div class="invalid-feedback">
+                Please select a valid country.
+              </div>
+            </div>
+
+            <div class="col-md-3">
+                <label for="zip" class="form-label">Stock</label>
+                <input type="text" class="form-control" id="floatingInput" value="@StockMaterial" @onchange="StockChange">
+            </div>
+
+            <button class="w-100 btn btn-lg btn-primary" type="submit" @onclick="SendMaterialToApi">Soumettre</button>
+        </div>
+    </div>
+}
+
+
+
+@code {
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    Material material = new();
+    int StockMaterial = 1;
+
+    private void MaterialIsAdd() => toasterService.AddToast(Toast.NewToast("Notification", "Le materiel a bien était ajouter", MessageColour.Success, 15));
+    private void MaterialIsNotAdd() => toasterService.AddToast(Toast.NewToast("Notification", "Le materiel n'a pas était ajouter", MessageColour.Warning, 15));
+    private void Error() => toasterService.AddToast(Toast.NewToast("Erreur", "Une erreur est survenue", MessageColour.Danger, 15));
+    private void NoCategorieInBDD() => toasterService.AddToast(Toast.NewToast("Notification", "Aucune Catégorie Enregistré, créé en une", MessageColour.Warning, 15));
+
+
+    protected async override void OnInitialized()
+    {
+
+        try
+        {
+
+            var materialCategorieObject = await App.GetStringToApi("api/MaterialCategorie/GetAllMaterialCategorie");
+
+            List<MaterialCategorie>? materialCategorieList = JsonConvert.DeserializeObject<List<MaterialCategorie>>(materialCategorieObject.ToString());
+
+            if (materialCategorieList == null)
+                Error();
+
+            if (materialCategorieList.Count < 1)
+                NoCategorieInBDD();
+            //_nav.NavigateTo("/MaterialManager");
+
+            if (materialCategorieList.Count > 0)
+                App.materialCategorieList = materialCategorieList;
+
+        }
+        catch { _nav.NavigateTo("/MaterialManager"); }
+
+        StateHasChanged();
+
+        base.OnInitialized();
+    }
+
+    public void SelectChange(ChangeEventArgs e)
+    {
+        material.MaterialCategorieId = App.materialCategorieList.FirstOrDefault(a => a.MaterialCategorieId.ToString() == e.Value.ToString()).MaterialCategorieId;  
+    }
+
+    public void StockChange(ChangeEventArgs e)
+    {
+        if (e.Value == "")
+            e.Value = 1;
+
+        if (Int32.Parse(e.Value.ToString()) < 1)
+            e.Value = 1;
+
+        StockMaterial = Int32.Parse(e.Value.ToString());
+
+        StateHasChanged();
+
+    }
+
+    public async void SendMaterialToApi()
+    {
+
+        if (material.MaterialName != "" && material.MaterialCategorieId >= 0 && StockMaterial > 0)
+        {
+            if(StockMaterial > 1)
+            {
+                bool Result = false;
+                MultipleMaterial multipleMaterialCategorie = new MultipleMaterial();
+                multipleMaterialCategorie.material = material;
+                multipleMaterialCategorie.StockMaterial = StockMaterial;
+
+                if(multipleMaterialCategorie != null)
+                Result = await App.SendPostAsJsonToApi("api/Material/AddMultipleMaterial", multipleMaterialCategorie);
+
+                if (Result)
+                {
+                    MaterialIsAdd();
+                    _nav.NavigateTo("/MaterialManager");
+                }
+                else
+                {
+                    MaterialIsNotAdd();
+                }
+            }
+            else
+            {
+                var Result = await App.SendPostAsJsonToApi("api/Material/AddMaterial", material);
+
+                if (Result)
+                {
+                    MaterialIsAdd();
+                    _nav.NavigateTo("/MaterialManager");
+                }
+                else
+                {
+                    MaterialIsNotAdd();
+                }
+            }
+
+        }
+        else
+        {
+            Error();
+        }
+
+    }
+
+}

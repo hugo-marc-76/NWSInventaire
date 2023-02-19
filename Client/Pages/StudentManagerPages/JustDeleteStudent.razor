@@ -1,0 +1,44 @@
+﻿@page "/DeleteStudent/{studentId:int}";
+@using System.Net;
+@using NWSInventaire.Client.Toaster;
+@inject HttpClient http
+@inject NavigationManager _nav
+
+
+@code {
+
+    [Parameter]
+    public int studentId { get; set; }
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    private void StudentIsDelete() => toasterService.AddToast(Toast.NewToast("Notification", "Étudiant supprimé ", MessageColour.Success, 15));
+    private void StudentIsNotDelete() => toasterService.AddToast(Toast.NewToast("Erreur", "Une erreur est survenue", MessageColour.Danger, 15));
+
+
+    protected async override void OnInitialized()
+    {
+
+        try
+        {
+            var result = await http.DeleteAsync("api/Student/DeleteStudent/" + studentId);
+
+            if (result.StatusCode != HttpStatusCode.OK)
+                StudentIsNotDelete();
+                _nav.NavigateTo("/StudentManager");
+
+            if (result.StatusCode == HttpStatusCode.OK)
+                StudentIsDelete();
+                _nav.NavigateTo("/StudentManager");
+
+        }
+        catch (Exception ex)
+        {
+            
+        }
+
+        base.OnInitialized();
+    }
+
+}

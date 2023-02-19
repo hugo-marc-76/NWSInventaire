@@ -1,0 +1,86 @@
+﻿@page "/ViewAllMaterialCategorie";
+
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+@using Newtonsoft.Json;
+@inject NavigationManager _nav
+
+@if (App.materialCategorieList != null)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Catégorie</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (MaterialCategorie materialCategorie in App.materialCategorieList)
+                {
+
+                    <tr>
+                        <td>@materialCategorie.MaterialCategorieId</td>
+                        <td>@materialCategorie.Name</td>
+                        
+                        <td>
+                            <button type="button" class="btn btn-primary" @onclick="@(()=>_nav.NavigateTo("/PutStudent/"))">Modifier</button>
+                            <button type="button" class="btn btn-danger" @onclick="@(()=>_nav.NavigateTo("/DeleteStudent/"))">Supprimer</button>
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    private void NoCategorieInBDD() => toasterService.AddToast(Toast.NewToast("Notification", "Aucune Catégorie Enregistré", MessageColour.Warning, 15));
+    private void Error() => toasterService.AddToast(Toast.NewToast("Erreur", "Une erreur est survenue", MessageColour.Danger, 15));
+
+    protected async override void OnInitialized()
+    {
+
+        try
+        {
+
+            var materialCategorieObject = await App.GetStringToApi("api/MaterialCategorie/GetAllMaterialCategorie");
+
+            List<MaterialCategorie>? materialCategorieList = JsonConvert.DeserializeObject<List<MaterialCategorie>>(materialCategorieObject.ToString());
+
+            if (materialCategorieList == null)
+                Error();
+
+            if (materialCategorieList.Count < 1)
+                NoCategorieInBDD();
+            //_nav.NavigateTo("/MaterialManager");
+
+            if (materialCategorieList.Count > 0)
+                App.materialCategorieList = materialCategorieList;
+
+        }
+        catch
+        { //_nav.NavigateTo("/");
+        }
+
+        StateHasChanged();
+
+        base.OnInitialized();
+    }
+
+}

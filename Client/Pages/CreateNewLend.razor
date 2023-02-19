@@ -1,0 +1,106 @@
+﻿@page "/CreateNewLend";
+@using NWSInventaire.Shared.Models
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject IJSRuntime _js
+
+<h3>CreateNewLend</h3>
+
+<div>
+        <div class="row g-3">
+
+            <div class="col-12">
+                <label for="address2" class="form-label">Address 2 <span class="text-muted">(Optional)</span></label>
+                <input type="text" class="form-control" id="address2" placeholder="Apartment or suite">
+            </div>
+
+            <div class="col-md-5">
+                <label for="Student" class="form-label">Select Student</label>
+                <select class="form-select" id="Student" required="">
+                    <option value="">Choose...</option>
+                    @if(studentList.Count > 0){
+                        @foreach (Student student in studentList)
+                        {
+                            <option value="@student.StudentId">@student.StudentFirstName @student.StudentLastName</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3 col-lg-3 col-sm-6">
+                <label for="startDate">Start</label>
+                <input id="startDatePicker" class="form-control" type="date" />
+                <span id="startDateSelected"></span>
+            </div>
+
+            <div class="col-md-3 col-lg-3 col-sm-6">
+                <label for="endDate">End</label>
+                <input id="endDate" class="form-control" type="date" />
+                <span id="endDateSelected"></span>
+            </div>
+
+        </div>
+
+        <hr class="my-4">
+
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="same-address">
+            <label class="form-check-label" for="same-address">Shipping address is the same as my billing address</label>
+        </div>
+
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="save-info">
+            <label class="form-check-label" for="save-info">Save this information for next time</label>
+        </div>
+
+        <hr class="my-4">
+
+
+
+        <button class="w-100 btn btn-primary btn-lg" @onclick="testthemigration">Continue to checkout</button>
+</div>
+
+
+
+@code {
+
+    public List<Student>? studentList = new List<Student>();
+
+    protected override async void OnInitialized()
+    {
+
+        try
+        {
+            var test = await Http.GetAsync("api/Student/GetAllStudent");
+
+            //studentList = JsonConvert.DeserializeObject<List<Student>>(Result);
+
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        var targetUrl = "Scripts/DatePickerScript.js";
+        await _js.InvokeVoidAsync("loadJs", targetUrl);
+
+
+    }
+
+
+    public async void testthemigration()
+    {
+        var test = await Http.GetStringAsync("testMig");
+
+        Console.WriteLine(test);
+
+    }
+
+
+}

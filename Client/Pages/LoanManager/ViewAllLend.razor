@@ -1,0 +1,140 @@
+﻿@page "/ViewAllLend"
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+@using Newtonsoft.Json;
+@inject NavigationManager _nav
+
+@if (App.materialList != null)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Materiel En Pret</th>
+                    <th scope="col">Étudiant lié</th>
+                    <th scope="col">A commencer le</th>
+                    <th scope="col">Fini le</th>
+                    <th scope="col">Date du dernier rappel</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (Material material in App.materialList.Where(x => x.studentId != null))
+                {
+
+                    <tr>
+                        <td>@material.MaterialId</td>
+                        @if (App.materialCategorieList != null)
+                        {
+                            <td>@material.MaterialName - @App.materialCategorieList.FirstOrDefault(x => x.MaterialCategorieId == material.MaterialCategorieId).Name</td>
+                        }
+                        else
+                        {
+                            <td>Erreur</td>
+                        }
+                        @if (material.studentId != null)
+                        {
+                            @if (App.studentList != null)
+                            {
+                                @if (material.studentId >= 0)
+                                {
+                                    <td>@App.studentList.FirstOrDefault(x => x.StudentId == material.studentId).StudentFirstName @App.studentList.FirstOrDefault(x => x.StudentId == material.studentId).StudentLastName</td>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <td>Aucun étudiant lié</td>
+                        }
+                        @if(material.StartLend != null)
+                        {
+                            <td>@material.StartLend</td>
+                        }
+                        @if(material.EndLend != null)
+                        {
+                            <td>@material.EndLend</td>
+                        }
+                        @if (material.LastReminder != null)
+                        {
+                            <td>@material.LastReminder</td>
+                        }
+                        else
+                        {
+                            <td>Pas de rappel</td>
+                        }
+                        <td>
+                            <button type="button" class="btn btn-primary" @onclick="@(()=>_nav.NavigateTo("/PutMaterial/" + material.MaterialId))">Envoyer un rappel</button>
+                            <button type="button" class="btn btn-danger" @onclick="@(()=>_nav.NavigateTo("/DeleteLend/" + material.MaterialId))">Supprimer</button>
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject] private ToasterService? _toasterService { get; set; }
+    private ToasterService toasterService => _toasterService!;
+
+    //private void StudentIsGet() => toasterService.AddToast(Toast.NewToast("Notification", "Tout les étudiant ont été charger", MessageColour.Success, 15));
+    //private void StudentIsNotGet() => toasterService.AddToast(Toast.NewToast("Notification", "Les étudiant n'ont pas été charger", MessageColour.Danger, 15));
+    private void NoMaterialInBDD() => toasterService.AddToast(Toast.NewToast("Notification", "Aucun Materiel Enregistré", MessageColour.Warning, 15));
+    private void Error() => toasterService.AddToast(Toast.NewToast("Erreur", "Une erreur est survenue", MessageColour.Danger, 15));
+
+
+    protected async override void OnInitialized()
+    {
+
+        try
+        {
+
+            await App.GetAllStudent();
+
+            var materialObject = await App.GetStringToApi("api/Material/GetAllMaterial");
+
+            List<Material> materialList = JsonConvert.DeserializeObject<List<Material>>(materialObject.ToString());
+
+            var materialCategorieObject = await App.GetStringToApi("api/MaterialCategorie/GetAllMaterialCategorie");
+
+            List<MaterialCategorie>? materialCategorieList = JsonConvert.DeserializeObject<List<MaterialCategorie>>(materialCategorieObject.ToString());
+
+            if (materialList.Count < 1)
+                NoMaterialInBDD();
+            //_nav.NavigateTo("/");
+
+            if (materialList.Count > 0)
+                App.materialList = materialList;
+
+            if (materialCategorieList == null)
+                Error();
+
+            if (materialCategorieList.Count < 1)
+                Error();
+
+            if (materialCategorieList.Count > 0)
+                App.materialCategorieList = materialCategorieList;
+
+        }
+        catch
+        { //_nav.NavigateTo("/");
+        }
+
+        StateHasChanged();
+
+        base.OnInitialized();
+    }
+
+}

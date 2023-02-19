@@ -1,0 +1,70 @@
+﻿@page "/AddStudent";
+@using NWSInventaire.Client.Toaster;
+@using NWSInventaire.Shared.Models;
+<div class="form-signin w-100 m-auto">
+  <div>
+
+    <div class="form-floating">
+        <input type="text" class="form-control" id="floatingInput" placeholder="Prénom" @oninput="@((e) => { student.StudentFirstName = (string)e.Value; })">
+        <label for="floatingInput">Prénom</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" id="floatingInput" placeholder="Nom" @oninput="@((e) => { student.StudentLastName = (string)e.Value; })">
+        <label for="floatingInput">Nom</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" id="floatingInput" placeholder="Nom" @oninput="@((e) => { student.StudentMail = (string)e.Value; })">
+        <label for="floatingInput">Email</label>
+    </div>
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit" @onclick="SendStudentToApi">Soumettre</button>
+  </div>
+</div>
+
+
+
+
+@code {
+
+    [Parameter]
+    public EventCallback BackTo { get; set; }
+
+    [Inject] private ToasterService? _toasterService {get; set;}
+    private ToasterService toasterService => _toasterService!;
+
+    Student student = new Student();
+
+    private void StudentIsAdd() => toasterService.AddToast(Toast.NewToast("Notification", "L'étudiant a bien était ajouter", MessageColour.Success, 15));
+    private void StudentIsNotAdd() => toasterService.AddToast(Toast.NewToast("Notification", "L'étudiant n'a pas était ajouter", MessageColour.Warning, 15));
+    private void Error() => toasterService.AddToast(Toast.NewToast("Erreur", "Il manque des informations", MessageColour.Danger, 15));
+
+    public async void SendStudentToApi()
+    {
+        Console.WriteLine(student.StudentId);
+        Console.WriteLine(student.StudentFirstName);
+        Console.WriteLine(student.StudentLastName);
+        Console.WriteLine(student.StudentMail);
+
+        if(student.StudentFirstName != null && student.StudentLastName != null && student.StudentMail != null)
+        {
+            var Result = await App.SendPostAsJsonToApi("api/Student/AddStudent", student);
+
+            if (Result)
+            {
+                StudentIsAdd();
+                BackTo.InvokeAsync();
+            }
+            else
+            {
+                StudentIsNotAdd();
+            }
+
+        }
+        else
+        {
+            Error();
+        }
+
+    }
+
+}

@@ -22,6 +22,8 @@
 
         public DateTime? LastReminder { get; set; }
 
+        public bool FinalReminder { get; set; } = false;
+
     }
 
     

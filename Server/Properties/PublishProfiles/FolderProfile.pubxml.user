@@ -4,8 +4,19 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 -->
 <Project>
   <PropertyGroup>
-    <_PublishTargetUrl>D:\repository\NWSInventaire\Server\bin\Debug\net6.0\publish\</_PublishTargetUrl>
-    <History>True|2022-10-21T17:17:18.2034881Z;True|2022-10-21T19:12:39.6007470+02:00;True|2022-10-21T19:12:07.6369206+02:00;True|2022-10-21T19:08:13.6812052+02:00;True|2022-10-21T19:03:29.3762160+02:00;True|2022-10-21T18:57:15.9513031+02:00;True|2022-10-21T18:31:00.3781611+02:00;False|2022-10-21T18:23:36.0664504+02:00;</History>
+    <_PublishTargetUrl>F:\REPO\NWSInventaire\Server\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2023-02-26T22:10:57.2594714Z;True|2023-02-22T17:18:19.1683635+01:00;True|2023-02-22T16:31:00.0398478+01:00;True|2022-10-21T19:17:18.2034881+02:00;True|2022-10-21T19:12:39.6007470+02:00;True|2022-10-21T19:12:07.6369206+02:00;True|2022-10-21T19:08:13.6812052+02:00;True|2022-10-21T19:03:29.3762160+02:00;True|2022-10-21T18:57:15.9513031+02:00;True|2022-10-21T18:31:00.3781611+02:00;False|2022-10-21T18:23:36.0664504+02:00;</History>
     <LastFailureDetails />
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
   </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="Default">
+      <Value>Server=localhost%3bDatabase=nwsinventaire%3bPort=5432%3bUser Id=admin%3bPassword=admin</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+  <ItemGroup>
+    <EFMigrations Include="NWSInventaire.Server.Data.DataContext">
+      <Value>Server=localhost%3bDatabase=nwsinventaire%3bPort=5432%3bUser Id=admin%3bPassword=admin</Value>
+    </EFMigrations>
+  </ItemGroup>
 </Project>

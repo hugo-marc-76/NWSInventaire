@@ -64,7 +64,8 @@
                             <td>Pas de rappel</td>
                         }
                         <td>
-                            <button type="button" class="btn btn-primary" @onclick="@(()=>_nav.NavigateTo("/PutMaterial/" + material.MaterialId))">Envoyer un rappel</button>
+                            <button type="button" class="btn btn-success" @onclick="@(()=>_nav.NavigateTo("/DeleteLend/" + material.MaterialId))">Rendu</button>
+                            <button type="button" class="btn btn-primary" @onclick="() => SendReminder(material.MaterialId)">Envoyer un rappel</button>
                             <button type="button" class="btn btn-danger" @onclick="@(()=>_nav.NavigateTo("/DeleteLend/" + material.MaterialId))">Supprimer</button>
                         </td>
 
@@ -135,6 +136,13 @@ else
         StateHasChanged();
 
         base.OnInitialized();
+    }
+
+    public async Task SendReminder(int? id)
+    {
+        var result = await App.SendPostAsJsonToApi("api/Lend/SendReminder/", id);
+
+        return;
     }
 
 }

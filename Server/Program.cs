@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using NWSInventaire.Server.Data;
+using NWSInventaire.Server.HostedService;
 using NWSInventaire.Server.Repository;
+using PingEquipementCavasXpert.Classes;
 using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,10 @@ builder.Services.AddScoped<StudentRepository>();
 builder.Services.AddScoped<MaterialCategorieRepository>();
 builder.Services.AddScoped<LendRepository>();
 
+builder.Services.AddScoped<MailService>();
+
+builder.Services.AddHostedService<LendHostedService>();
+
 
 
 var app = builder.Build();
@@ -38,7 +44,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NWSInventaire.Server.Repository;
 using NWSInventaire.Shared.Models;
 using System.Drawing.Drawing2D;
@@ -26,10 +27,17 @@ namespace NWSInventaire.Server.Controllers
             return Lend.CreateNewLend(material);
         }
 
-        [HttpDelete("DeleteLend")]
+        [HttpDelete("DeleteLend/{id}")]
         public IActionResult DeleteLend(int id)
         {
             return Lend.DeleteLend(id);
+        }
+
+        [HttpPost("SendReminder")]
+        public IActionResult SendReminder(object item)
+        {
+            var result = JsonConvert.DeserializeObject(item.ToString());
+            return Lend.SendReminder(Int32.Parse(result.ToString()));
         }
 
     }
